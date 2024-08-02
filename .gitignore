@@ -1,0 +1,37 @@
+# Diretórios de logs e temporários
+logs/
+run/
+*.log
+
+# Diretórios e arquivos de configuração locais
+airflow.cfg
+airflow.db
+airflow_metadata.db
+
+# Diretórios e arquivos específicos do ambiente
+airflow_env/
+.env
+.envrc
+*.pyc
+__pycache__/
+
+# Docker e Kubernetes
+docker-compose.yml
+Dockerfile
+*.docker
+*.yaml
+*.yml
+.kube/
+*.pkl
+
+# IDEs e editores
+*.swp
+*.swo
+.idea/
+*.vscode/
+
+# Dependências e pacotes
+*.egg
+*.egg-info/
+dist/
+build/
