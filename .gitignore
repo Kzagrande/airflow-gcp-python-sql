@@ -14,6 +14,7 @@ airflow_env/
 .envrc
 *.pyc
 __pycache__/
+client_secret.json
 
 # Docker e Kubernetes
 docker-compose.yml
