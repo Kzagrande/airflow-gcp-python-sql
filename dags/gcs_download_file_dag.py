@@ -44,6 +44,7 @@ def upload_to_gcs(**kwargs):
         src=local_file_path,
         gcp_conn_id='google-cloud-storage'
     )
+    
     # Execute a tarefa criada
     upload_task.execute(context=kwargs)
 
@@ -75,14 +76,19 @@ with DAG(
 
     transform_print_task = BashOperator(
         task_id='transform_print_task',
-        bash_command="python3 /opt/airflow/scripts/transform_picking.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
+        bash_command="python3 /opt/airflow/scripts/picking_transform/transform_to_silver.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
     )
 
-    upload_to_gcs_task = PythonOperator(
+    upload_to_gcs_task = PythonOperator(    
         task_id='upload_to_gcs_task',
         python_callable=upload_to_gcs,
         provide_context=True
     )
+
+    transform_to_gold_layer = BashOperator(
+        task_id='transform_to_gold_layer',
+        bash_command="python3 /opt/airflow/scripts/picking_transform/transform_to_silver.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
+    )   
 
     # Definição das dependências
     get_file_name_task >> download_file_task >> transform_print_task >> upload_to_gcs_task
