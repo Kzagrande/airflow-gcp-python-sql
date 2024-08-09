@@ -7,6 +7,7 @@ from airflow.utils.dates import days_ago
 from datetime import datetime, timedelta
 import os
 
+
 def get_file_name(**kwargs):
     current_time = datetime.now() - timedelta(hours=1)  # Subtrai uma hora da hora atual
     file_name = f'picking-{current_time.strftime("%Y-%m-%d-%H.csv")}'
@@ -19,16 +20,14 @@ def download_file(**kwargs):
 
     local_file_path = os.path.join('/opt/airflow/data_lake/Bronze/Picking', file_name)
     
-    # Cria uma instância do GCSToLocalFilesystemOperator com o nome do arquivo
     download_task = GCSToLocalFilesystemOperator(
         task_id='download_file',
         bucket='wms-extract-hour',
         object_name=f'Bronze/Picking/{file_name}',
         filename=local_file_path,
         gcp_conn_id='google-cloud-storage',
-        trigger_rule='all_success'  # Executa apenas se as tarefas anteriores tiverem sucesso
+        trigger_rule='all_success'
     )
-    # Execute a tarefa criada
     download_task.execute(context=kwargs)
 
 def upload_to_gcs(**kwargs):
@@ -36,7 +35,6 @@ def upload_to_gcs(**kwargs):
     file_name = ti.xcom_pull(task_ids='get_file_name', key='file_name')
     local_file_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
     
-    # Cria uma instância do LocalFilesystemToGCSOperator com o nome do arquivo
     upload_task = LocalFilesystemToGCSOperator(
         task_id='upload_to_gcs_task',
         bucket='wms-extract-hour',
@@ -44,11 +42,10 @@ def upload_to_gcs(**kwargs):
         src=local_file_path,
         gcp_conn_id='google-cloud-storage'
     )
-    
-    # Execute a tarefa criada
     upload_task.execute(context=kwargs)
 
-# Definição do DAG
+
+
 default_args = {
     'start_date': datetime(2024, 8, 2, 11, 15, 0),  # Início às 11:15 
     'retries': 3,
@@ -76,7 +73,7 @@ with DAG(
 
     transform_print_task = BashOperator(
         task_id='transform_print_task',
-        bash_command="python3 /opt/airflow/scripts/picking_transform/transform_to_silver.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
+        bash_command="python3 /opt/airflow/scripts/Transform/Picking/transform_to_silver.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
     )
 
     upload_to_gcs_task = PythonOperator(    
@@ -85,10 +82,11 @@ with DAG(
         provide_context=True
     )
 
-    transform_to_gold_layer = BashOperator(
-        task_id='transform_to_gold_layer',
-        bash_command="python3 /opt/airflow/scripts/picking_transform/transform_to_silver.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
-    )   
+    upload_to_sql_task = BashOperator(
+        task_id='upload_to_sql_task',
+       bash_command="python3 /opt/airflow/scripts/Load/Picking/load_to_dw.py {{ ti.xcom_pull(task_ids='get_file_name', key='file_name') }}"
+    )
 
     # Definição das dependências
-    get_file_name_task >> download_file_task >> transform_print_task >> upload_to_gcs_task
+    get_file_name_task >> download_file_task >> transform_print_task
+    transform_print_task >> [upload_to_gcs_task, upload_to_sql_task]
