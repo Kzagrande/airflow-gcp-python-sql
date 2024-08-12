@@ -29,6 +29,8 @@ def extract_transform_print(file_name):
         df.iloc[:, 19].fillna(datetime(1500, 1, 11, 11, 11, 11), inplace=True)
         df.iloc[:, 21].fillna(datetime(1500, 1, 11, 11, 11, 11), inplace=True)
 
+        df.iloc[:, 12] = pd.to_numeric(df.iloc[:, 12], errors='coerce').fillna(0).astype(int)
+
         df["sector"] = "picking"
         df["current_date_"] = datetime.now().strftime("%Y-%m-%d")
         df.fillna('-', inplace=True)
