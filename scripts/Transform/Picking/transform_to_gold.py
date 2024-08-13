@@ -14,8 +14,8 @@ def detect_delimiter(file_path):
         else:
             raise ValueError("Unknown delimiter")
 
-def transform_to_gold():
-    file_name = "picking-2024-08-12-12.csv"
+def transform_to_gold(file_name):
+    # file_name = "picking-2024-08-12-12.csv"
     print('FILE NAME:', file_name)
     file_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
     
@@ -68,25 +68,30 @@ def transform_to_gold():
         # Formatar 'work_occupation' para duas casas decimais
         grouped_df['work_occupation'] = grouped_df['effective_hours']
 
+        grouped_df['warehouse'] = df['warehouse'][1]
+        grouped_df['current_date_'] = df['current_date_'][1]
+        grouped_df['sector'] = df['sector'][1]
+        grouped_df['extraction_hour'] = df['extraction_hour'][1]
+
         print(df.head())
         print(grouped_df.head())
 
         # Salvar o DataFrame modificado (se necessário)
         output_path = os.path.join('/opt/airflow/data_lake/Gold/Picking', file_name)
         grouped_df.to_csv(output_path, index=False, sep=delimiter)
-        # print("DataFrame saved to:", output_path)
+        print("DataFrame saved to:", output_path)
         
         # Apagar o arquivo original na Bronze (se necessário)
-        # os.remove(file_path)
-        # print(f"Original file {file_path} has been deleted.")
+        os.remove(file_path)
+        print(f"Original file {file_path} has been deleted.")
         
     except Exception as e:
         print(f"Error reading or processing file {file_path}: {e}")
 
 if __name__ == "__main__":
-    transform_to_gold()
-    # if len(sys.argv) > 1:
-    #     file_name = sys.argv[1]
-    #     transform_to_gold(file_name)
-    # else:
-    #     print("File name argument is missing")
+    # transform_to_gold()
+    if len(sys.argv) > 1:
+        file_name = sys.argv[1]
+        transform_to_gold(file_name)
+    else:
+        print("File name argument is missing")
