@@ -13,9 +13,9 @@ def detect_delimiter(file_path):
         else:
             raise ValueError("Unknown delimiter")
 
-def extract_transform_print(file_name, dw_file_path):
-    print('FILE NAME:', file_name) #PICKING-2024-08-14-12.csv
-    file_path = os.path.join(dw_file_path, file_name)
+def extract_transform_print(file_name):
+    print('FILE NAME:', file_name)
+    file_path = os.path.join('/opt/airflow/data_lake/Bronze/Picking', file_name)
     
     try:
         # Detectar o delimitador
@@ -41,38 +41,24 @@ def extract_transform_print(file_name, dw_file_path):
         print(hours_date_type)
         hours_date_type = hours_date_type.replace(minute=0, second=0, microsecond=0)
         df["extraction_hour"] = hours_date_type
-        return df
 
+        # Salvar o DataFrame modificado
+        output_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
+        df.to_csv(output_path, index=False, sep=delimiter)
+
+        print("DataFrame saved to:", output_path)
+        print(df.head())
+        
+        # Apagar o arquivo original na Bronze
+        os.remove(file_path)
+        print(f"Original file {file_path} has been deleted.")
+        
     except Exception as e:
         print(f"Error reading or processing file {file_path}: {e}")
-
-def join_df(file_name, df_dwb, df_dwd):
-    # Unir os dois DataFrames
-    combined_df = pd.concat([df_dwb, df_dwd], ignore_index=True)
-
-    # Detectar o delimitador para salvar o arquivo
-    delimiter = ';'
-    output_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
-    
-    # Salvar o DataFrame combinado
-    combined_df.to_csv(output_path, index=False, sep=delimiter)
-
-    print("Combined DataFrame saved to:", output_path)
-    print(combined_df.head())
-    
-    # Apagar o arquivo original na Bronze
-    os.remove(os.path.join('/opt/airflow/data_lake/Bronze/WHB/Picking', file_name))
-    os.remove(os.path.join('/opt/airflow/data_lake/Bronze/WHD/Picking', file_name))
-    print(f"Original files have been deleted.")
-
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
-        whb_filepath = '/opt/airflow/data_lake/Bronze/WHB/Picking'
-        whd_filepath = '/opt/airflow/data_lake/Bronze/WHD/Picking'
-        df_dwb = extract_transform_print(file_name, whb_filepath)
-        df_dwd = extract_transform_print(file_name, whd_filepath)
-        join_df(file_name, df_dwb, df_dwd)
+        extract_transform_print(file_name)
     else:
         print("File name argument is missing")

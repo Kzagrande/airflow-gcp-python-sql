@@ -15,7 +15,6 @@ def detect_delimiter(file_path):
             raise ValueError("Unknown delimiter")
 
 def transform_to_gold(file_name):
-    # file_name = "picking-2024-08-12-12.csv"
     print('FILE NAME:', file_name)
     file_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
     
@@ -48,6 +47,10 @@ def transform_to_gold(file_name):
 
         # Agrupar por picker e calcular as quantidades
         grouped_df = df.groupby('picker').agg(
+            warehouse=('warehouse', 'first'),
+            current_date_=('current_date_', 'first'),
+            sector=('sector', 'first'),
+            extraction_hour=('extraction_hour', 'first'),
             effective_quantity=('subpackage_number', lambda x: (df.loc[x.index, 'valido'] == 1).sum()),
             real_quantity=('subpackage_number', 'count'),
             effective_hours=('effective_hours', lambda x: x[df['valido'] == 1].sum() / 3600)  # Convertendo segundos para horas
@@ -68,11 +71,6 @@ def transform_to_gold(file_name):
         # Formatar 'work_occupation' para duas casas decimais
         grouped_df['work_occupation'] = grouped_df['effective_hours']
 
-        grouped_df['warehouse'] = df['warehouse'][1]
-        grouped_df['current_date_'] = df['current_date_'][1]
-        grouped_df['sector'] = df['sector'][1]
-        grouped_df['extraction_hour'] = df['extraction_hour'][1]
-
         print(df.head())
         print(grouped_df.head())
 
@@ -89,7 +87,6 @@ def transform_to_gold(file_name):
         print(f"Error reading or processing file {file_path}: {e}")
 
 if __name__ == "__main__":
-    # transform_to_gold()
     if len(sys.argv) > 1:
         file_name = sys.argv[1]
         transform_to_gold(file_name)
