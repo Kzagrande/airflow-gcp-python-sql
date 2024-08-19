@@ -47,16 +47,15 @@ def upload_to_sql(file_name=None):
     print(f"Colunas no DataFrame: {df.columns}")
     
     # Inserir os dados no banco de dados
-    try:
-        df.to_sql('uph_picking_hour', engine, if_exists='append', index=False)
-        print("Dados inseridos com sucesso na tabela 'uph_picking_hour'.")
-        
-        # Apagar o arquivo original na Bronze (se necessário)
-        os.remove(local_file_path)
-        print(f"Original file {local_file_path} has been deleted.")
-        
-    except Exception as e:
-        print(f"Erro ao inserir dados na tabela 'uph_picking_hour': {e}")
+
+    df.to_sql('uph_picking_hour', engine, if_exists='append', index=False)
+    print("Dados inseridos com sucesso na tabela 'uph_picking_hour'.")
+    
+    # Apagar o arquivo original na Bronze (se necessário)
+    os.remove(local_file_path)
+    print(f"Original file {local_file_path} has been deleted.")
+    
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

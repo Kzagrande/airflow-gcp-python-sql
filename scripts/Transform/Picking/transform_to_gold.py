@@ -27,10 +27,10 @@ def transform_to_gold(file_name):
         df = pd.read_csv(file_path, delimiter=delimiter)
 
         # Selecionar as colunas 0, 25, 23, e 18
-        df = df.iloc[:, [0, 24, 23, 25, 8, 19, 18]]
+        df = df.iloc[:, [0, 24, 23, 25,26, 8, 19, 18]]
         
         # Renomear as colunas para facilitar a referência
-        df.columns = ['warehouse', 'current_date_', 'sector', 'extraction_hour', 'subpackage_number', 'picking_time', 'picker','shift']
+        df.columns = ['warehouse', 'current_date_', 'sector', 'extraction_hour','shift', 'subpackage_number', 'picking_time', 'picker']
 
         df = df.sort_values(by=['picker', 'picking_time'])
 

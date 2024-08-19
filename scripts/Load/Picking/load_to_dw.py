@@ -72,18 +72,17 @@ def upload_to_sql(file_name=None):
         22: 'flag_cancel',
         23: 'sector',
         24: 'current_date_',
-        25: 'extraction_hour'
+        25: 'extraction_hour',
+        26: 'shift'
     }
 
     # Renomeie as colunas do DataFrame com base no mapeamento
     df.columns = [index_to_column_mapping.get(i) for i in range(len(df.columns))]
     
     # Insira os dados no banco de dados
-    try:
-        df.to_sql('picking', engine, if_exists='append', index=False)
-        print("Dados inseridos com sucesso na tabela 'picking'.")
-    except Exception as e:
-        print(f"Erro ao inserir dados na tabela 'picking': {e}")
+
+    df.to_sql('picking', engine, if_exists='append', index=False)
+    print("Dados inseridos com sucesso na tabela 'picking'.")
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

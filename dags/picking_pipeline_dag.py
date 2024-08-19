@@ -22,7 +22,7 @@ def download_file_d(**kwargs):
     
     download_task = GCSToLocalFilesystemOperator(
         task_id='download_file_D',
-        bucket='wms-extract-hour',
+        bucket='wms-uph-pipeline',
         object_name=f'Bronze/WHD/Picking/D-{file_name}',
         filename=local_file_path,
         gcp_conn_id='google-cloud-storage',
@@ -39,7 +39,7 @@ def download_file_b(**kwargs):
     
     download_task = GCSToLocalFilesystemOperator(
         task_id='download_file_B',
-        bucket='wms-extract-hour',
+        bucket='wms-uph-pipeline',
         object_name=f'Bronze/WHB/Picking/B-{file_name}',
         filename=local_file_path,
         gcp_conn_id='google-cloud-storage',
@@ -54,7 +54,7 @@ def upload_silver_to_gcs(**kwargs):
     
     upload_task = LocalFilesystemToGCSOperator(
         task_id='upload_to_silver_gcs_task',
-        bucket='wms-extract-hour',
+        bucket='wms-uph-pipeline',
         dst=f'Silver/Picking/{file_name}',
         src=local_file_path,
         gcp_conn_id='google-cloud-storage'
@@ -68,7 +68,7 @@ def upload_gold_to_gcs(**kwargs):
     
     upload_task = LocalFilesystemToGCSOperator(
         task_id='upload_to_gold_gcs_task',
-        bucket='wms-extract-hour',
+        bucket='wms-uph-pipeline',
         dst=f'Gold/Picking/{file_name}',
         src=local_file_path,
         gcp_conn_id='google-cloud-storage'
