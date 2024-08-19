@@ -3,6 +3,8 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 import os
 import sys
+sys.path.append('/opt/airflow/scripts')
+from Load.db_connection import get_engine
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -22,53 +24,32 @@ def upload_to_sql(file_name=None):
         print("Nenhum nome de arquivo fornecido.")
         return
     
-    local_file_path = os.path.join('/opt/airflow/data_lake/Silver/Putaway', file_name)
+    local_file_path = os.path.join('/opt/airflow/data_lake/Gold/Sorting_out', file_name)
     delimiter = detect_delimiter(local_file_path)
     
     # Carregar os dados do arquivo CSV
     try:
-        df = pd.read_csv(local_file_path,delimiter=delimiter)
+        df = pd.read_csv(local_file_path, delimiter=delimiter)
         print(f"Arquivo CSV '{file_name}' carregado com sucesso.")
     except Exception as e:
         print(f"Erro ao carregar o arquivo CSV: {e}")
         return
     
-    # Conectar ao banco de dados SQL
-    try:
-        engine = create_engine("mysql+pymysql://" + \
-                               "root" + ":" + \
-                               os.getenv('DATABASE_PASS') + "@" + "localhost" + \
-                               ":" + "3306" + "/" + "ware_ws_shein" + \
-                               "?" + "charset=utf8mb4")
-        print("Conexão com o banco de dados estabelecida.")
-    except Exception as e:
-        print(f"Erro ao conectar ao banco de dados: {e}")
-        return
     
-    # Defina um mapeamento de índice para nome da coluna
-    index_to_column_mapping = {
-        0: 'warehouse',
-        1: 'subpackage_number',
-        2: 'order_number',
-        3: 'zone_',
-        4: 'lane',
-        5: 'location',
-        6: 'move_and_place_on_shelves',
-        7: 'operated_by',
-        8: 'operation_time',
-        9: 'sector',
-        10: 'current_date_',
-        11: 'extraction_hour',
-        12: 'shift',
-    }
-
-    # Renomeie as colunas do DataFrame com base no mapeamento
-    df.columns = [index_to_column_mapping.get(i) for i in range(len(df.columns))]
+    # Verifique se as colunas do DataFrame correspondem à tabela no banco de dados
+    print(f"Colunas no DataFrame: {df.columns}")
     
-    # Insira os dados no banco de dados
+    # Inserir os dados no banco de dados
 
-    df.to_sql('putaway', engine, if_exists='append', index=False)
-    print("Dados inseridos com sucesso na tabela 'putaway'.")
+    engine = get_engine()
+    df.to_sql('uph_per_hour', engine, if_exists='append', index=False)
+    print("Dados inseridos com sucesso na tabela 'uph_per_hour'.")
+    
+    # Apagar o arquivo original na Bronze (se necessário)
+    os.remove(local_file_path)
+    print(f"Original file {local_file_path} has been deleted.")
+    
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
