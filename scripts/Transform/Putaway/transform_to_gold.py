@@ -16,7 +16,7 @@ def detect_delimiter(file_path):
 
 def transform_to_gold(file_name):
     print('FILE NAME:', file_name)
-    file_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
+    file_path = os.path.join('/opt/airflow/data_lake/Silver/Putaway', file_name)
     
     try:
         # Detectar o delimitador
@@ -26,26 +26,26 @@ def transform_to_gold(file_name):
         # Ler o arquivo CSV
         df = pd.read_csv(file_path, delimiter=delimiter)
 
-        # Selecionar as colunas 0, 25, 23, e 18
-        df = df.iloc[:, [0, 24, 23, 25,26, 8, 19, 18]]
+        # Selecionar as colunas 
+        df = df.iloc[:, [0,1, 7,8, 9, 10, 11, 12  ]]
         
         # Renomear as colunas para facilitar a referência
-        df.columns = ['warehouse', 'current_date_', 'sector', 'extraction_hour','shift', 'subpackage_number', 'picking_time', 'operated_by']
+        df.columns = ['warehouse','subpackage_number', 'operated_by','operation_time', 'sector','current_date_', 'extraction_hour','shift']
 
-        df = df.sort_values(by=['operated_by', 'picking_time'])
+        df = df.sort_values(by=['operated_by', 'operation_time'])
 
-        df['picking_time_next'] = df.groupby('operated_by')['picking_time'].shift(-1)
-        df['picking_time_next'] = df['picking_time_next'].fillna(df['picking_time'])
-        df['picking_time'] = pd.to_datetime(df['picking_time'])
-        df['picking_time_next'] = pd.to_datetime(df['picking_time_next'])
+        df['putaway_time_next'] = df.groupby('operated_by')['operation_time'].shift(-1)
+        df['putaway_time_next'] = df['putaway_time_next'].fillna(df['operation_time'])
+        df['operation_time'] = pd.to_datetime(df['operation_time'])
+        df['putaway_time_next'] = pd.to_datetime(df['putaway_time_next'])
 
-        # Calcular a diferença em segundos entre 'picking_time' e 'picking_time_next'
-        df['effective_hours'] = (df['picking_time_next'] - df['picking_time']).dt.total_seconds() 
+        # Calcular a diferença em segundos entre 'operation_time' e 'putaway_time_next'
+        df['effective_hours'] = (df['putaway_time_next'] - df['operation_time']).dt.total_seconds() 
 
         # Criar a coluna 'valido' com base na condição se 'effective_hours' <= 600
         df['valido'] = df['effective_hours'].apply(lambda x: 1 if x <= 600 else 0)
 
-        # Agrupar por operated_by e calcular as quantidades
+        # Agrupar por operator e calcular as quantidades
         grouped_df = df.groupby('operated_by').agg(
             warehouse=('warehouse', 'first'),
             current_date_=('current_date_', 'first'),
@@ -76,7 +76,7 @@ def transform_to_gold(file_name):
         print(grouped_df.head())
 
         # Salvar o DataFrame modificado (se necessário)
-        output_path = os.path.join('/opt/airflow/data_lake/Gold/Picking', file_name)
+        output_path = os.path.join('/opt/airflow/data_lake/Gold/Putaway', file_name)
         grouped_df.to_csv(output_path, index=False, sep=delimiter)
         print("DataFrame saved to:", output_path)
         
