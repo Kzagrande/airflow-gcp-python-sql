@@ -39,3 +39,4 @@ Dockerfile
 *.egg-info/
 dist/
 build/
+client_secret.json
