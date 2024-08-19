@@ -1,3 +1,6 @@
+# Ignorar o arquivo client_secret.json
+client_secret.json
+
 # Diretórios de logs e temporários
 logs/
 run/

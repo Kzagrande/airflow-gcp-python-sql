@@ -41,6 +41,12 @@ def extract_transform_print(file_name, dw_file_path):
         print(hours_date_type)
         hours_date_type = hours_date_type.replace(minute=0, second=0, microsecond=0)
         df["extraction_hour"] = hours_date_type
+        
+        # Adicionar a coluna "shift" com base no valor de "extraction_hour"
+        df["shift"] = df["extraction_hour"].apply(lambda x: "1ST" if x.hour >= 6 and x.hour < 14 or (x.hour == 14 and x.minute <= 20) 
+                                                   else "2ND" if x.hour >= 14 and x.hour < 22 or (x.hour == 22 and x.minute <= 35)
+                                                   else "3RD")
+        
         return df
 
     except Exception as e:

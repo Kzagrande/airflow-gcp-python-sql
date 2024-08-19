@@ -30,7 +30,7 @@ def transform_to_gold(file_name):
         df = df.iloc[:, [0, 24, 23, 25, 8, 19, 18]]
         
         # Renomear as colunas para facilitar a referência
-        df.columns = ['warehouse', 'current_date_', 'sector', 'extraction_hour', 'subpackage_number', 'picking_time', 'picker']
+        df.columns = ['warehouse', 'current_date_', 'sector', 'extraction_hour', 'subpackage_number', 'picking_time', 'picker','shift']
 
         df = df.sort_values(by=['picker', 'picking_time'])
 
@@ -51,6 +51,7 @@ def transform_to_gold(file_name):
             current_date_=('current_date_', 'first'),
             sector=('sector', 'first'),
             extraction_hour=('extraction_hour', 'first'),
+            shift=('shift', 'first'),
             effective_quantity=('subpackage_number', lambda x: (df.loc[x.index, 'valido'] == 1).sum()),
             real_quantity=('subpackage_number', 'count'),
             effective_hours=('effective_hours', lambda x: x[df['valido'] == 1].sum() / 3600)  # Convertendo segundos para horas
