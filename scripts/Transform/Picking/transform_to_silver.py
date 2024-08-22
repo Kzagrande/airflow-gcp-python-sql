@@ -3,26 +3,13 @@ import pandas as pd
 import sys
 from datetime import datetime
 
-def detect_delimiter(file_path):
-    with open(file_path, 'r') as file:
-        first_line = file.readline()
-        if ',' in first_line:
-            return ','
-        elif ';' in first_line:
-            return ';'
-        else:
-            raise ValueError("Unknown delimiter")
-
 def extract_transform_print(file_name, dw_file_path):
-    print('FILE NAME:', file_name) #PICKING-2024-08-14-12.csv
+    print('FILE NAME:', file_name) #PICKING-2024-08-14-12.xlsx
     file_path = os.path.join(dw_file_path, file_name)
     
     try:
-        # Detectar o delimitador
-        delimiter = detect_delimiter(file_path)
-        print(f"Detected delimiter: '{delimiter}'")
-        
-        df = pd.read_csv(file_path, delimiter=delimiter)
+        # Ler o arquivo Excel
+        df = pd.read_excel(file_path)
 
         df.iloc[:, 16].fillna(datetime(1500, 1, 11, 11, 11, 11), inplace=True)
         df.iloc[:, 17].fillna(datetime(1500, 1, 11, 11, 11, 11), inplace=True)
@@ -56,12 +43,10 @@ def join_df(file_name, df_dwb, df_dwd):
     # Unir os dois DataFrames
     combined_df = pd.concat([df_dwb, df_dwd], ignore_index=True)
 
-    # Detectar o delimitador para salvar o arquivo
-    delimiter = ';'
     output_path = os.path.join('/opt/airflow/data_lake/Silver/Picking', file_name)
     
-    # Salvar o DataFrame combinado
-    combined_df.to_csv(output_path, index=False, sep=delimiter)
+    # Salvar o DataFrame combinado como um arquivo Excel
+    combined_df.to_csv(output_path, index=False)
 
     print("Combined DataFrame saved to:", output_path)
     print(combined_df.head())
@@ -70,7 +55,6 @@ def join_df(file_name, df_dwb, df_dwd):
     os.remove(os.path.join('/opt/airflow/data_lake/Bronze/WHB/Picking', file_name))
     os.remove(os.path.join('/opt/airflow/data_lake/Bronze/WHD/Picking', file_name))
     print(f"Original files have been deleted.")
-
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

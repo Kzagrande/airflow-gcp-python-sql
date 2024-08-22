@@ -48,8 +48,8 @@ def upload_to_sql(file_name=None):
     
     # Inserir os dados no banco de dados
 
-    df.to_sql('uph_picking_hour', engine, if_exists='append', index=False)
-    print("Dados inseridos com sucesso na tabela 'uph_picking_hour'.")
+    df.to_sql('uph_per_hour', engine, if_exists='append', index=False)
+    print("Dados inseridos com sucesso na tabela 'uph_per_hour'.")
     
     # Apagar o arquivo original na Bronze (se necessário)
     os.remove(local_file_path)

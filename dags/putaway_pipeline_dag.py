@@ -10,7 +10,7 @@ import os
 
 def get_file_name(**kwargs):
     current_time = datetime.now() - timedelta(hours=1)  # Subtrai uma hora da hora atual
-    file_name = f'PUTAWAY-{current_time.strftime("%Y-%m-%d-%H.csv")}'
+    file_name = f'PUTAWAY-{current_time.strftime("%Y-%m-%d-%H.xlsx")}'
     kwargs['ti'].xcom_push(key='file_name', value=file_name)  # Passa o nome do arquivo para o XCom
 
 def download_file_d(**kwargs):
@@ -77,9 +77,9 @@ def upload_gold_to_gcs(**kwargs):
 
 
 default_args = {
-    'start_date': datetime(2024, 8, 13, 12, 0, 0),
+    'start_date': datetime(2024, 8, 22, 15, 15,15),
     'retries': 3,
-    'retry_delay': timedelta(minutes=1)
+    'retry_delay': timedelta(minutes=10)
 }
 
 
